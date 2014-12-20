@@ -16,21 +16,17 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-/**
- * From  https://github.com/dsyer/sparklr-boot
- *
- * Here are some curl commands to use to get started:
 
-    $ curl -H " Accept: application/json" my-client-with-secret:secret@localhost:8080/oauth/token -d grant_type=client_credentials
-    {... "access_token": "b561ff06-4259-466e-92d8-781db1a51901", ...}
-    $ TOKEN=b561ff06-4259-466e-92d8-781db1a5190
-    $ curl -H "Authorization: Bearer $TOKEN" localhost:8080/
-    Hello World
-    
- * NOTE:
- * (1) For access token URL, localhost:8080/oauth/token
- *  (1a) need to add "AUthorisation" header: Base <my-client-with-secret:secret (Base 64), i.e "Basic bXktY2xpZW50LXdpdGgtc2VjcmV0OnNlY3JldA=="
- *  (1b) need to set content type to "application/x-www-form-urlencoded" or will get "Missing grant type" error
+/**
+ * From https://github.com/dsyer/sparklr-boot
+ * 
+ * Here are some curl commands to use to get started:
+ * 
+ * $ curl -H " Accept: application/json" my-client-with-secret:secret@localhost:8080/oauth/token -d grant_type=client_credentials {... "access_token":
+ * "b561ff06-4259-466e-92d8-781db1a51901", ...} $ TOKEN=b561ff06-4259-466e-92d8-781db1a5190 $ curl -H "Authorization: Bearer $TOKEN" localhost:8080/ Hello World
+ * 
+ * NOTE: (1) For access token URL, localhost:8080/oauth/token (1a) need to add "AUthorisation" header: Base <my-client-with-secret:secret (Base 64), i.e
+ * "Basic bXktY2xpZW50LXdpdGgtc2VjcmV0OnNlY3JldA==" (1b) need to set content type to "application/x-www-form-urlencoded" or will get "Missing grant type" error
  */
 @Configuration
 @ComponentScan
@@ -38,10 +34,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Application {
 
+    private static final String RESOURCE_ID = "blog_resource";
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
-    
 
     @RequestMapping("/")
     public String home() {
@@ -65,7 +62,7 @@ public class Application {
 
         @Override
         public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-            resources.resourceId("sparklr");
+            resources.resourceId(RESOURCE_ID);
         }
 
     }
@@ -86,26 +83,19 @@ public class Application {
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
             // @formatter:off
             clients.inMemory()
-                .withClient("my-trusted-client")
-                    .authorizedGrantTypes("password", "authorization_code", "refresh_token", "implicit")
-                    .authorities("ROLE_CLIENT", "ROLE_TRUSTED_CLIENT")
-                    .scopes("read", "write", "trust")
-                    .resourceIds("sparklr")
-                    .accessTokenValiditySeconds(60)
-            .and()
-                .withClient("my-client-with-registered-redirect")
+                .withClient("client-with-registered-redirect")
                     .authorizedGrantTypes("authorization_code")
                     .authorities("ROLE_CLIENT")
                     .scopes("read", "trust")
-                    .resourceIds("sparklr")
-                    .redirectUris("http://anywhere?key=value")      
+                    .resourceIds(RESOURCE_ID)
+                    .redirectUris("http://anywhere?key=value")
                     .secret("secret123")
             .and()
                 .withClient("my-client-with-secret")
                     .authorizedGrantTypes("client_credentials", "password")
                     .authorities("ROLE_CLIENT")
                     .scopes("read")
-                    .resourceIds("sparklr")
+                    .resourceIds(RESOURCE_ID)
                     .secret("secret");
         // @formatter:on
         }
